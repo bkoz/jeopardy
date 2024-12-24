@@ -10,9 +10,16 @@ import json
 
 logging.basicConfig(level=logging.INFO)
 
+logger = logging.getLogger()
+
+huggingface_api_key = os.getenv("HUGGINGFACE_API_KEY")
+if huggingface_api_key == None:
+     logger.error('HUGGINGFACE_API_KEY not set!')
+     exit(1)
+
 client = weaviate.connect_to_embedded(
     headers={
-        "X-Huggingface-Api-Key": os.environ["HUGGINGFACE_API_KEY"]
+        "X-Huggingface-Api-Key": huggingface_api_key 
     }
 )
 
