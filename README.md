@@ -1,2 +1,2 @@
 # jeopardy
-Weaviate example
+Weaviate example that imports 1000 Jeopardy questions.
