@@ -85,4 +85,4 @@ with gr.Blocks(title="Search the Jeopardy Vector Database powered by Weaviate") 
             
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(share=True, server_name="0.0.0.0")
