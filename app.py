@@ -55,7 +55,7 @@ logging.info('Importing 1000 Questions...')
 questions = client.collections.get("Question")
 questions.data.insert_many(question_objs)
 logging.info('Finished Importing Questions')
-print(questions)
+# print(questions)
 
 def respond(query):
 
