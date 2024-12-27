@@ -51,7 +51,7 @@ for i, d in enumerate(data):
         "value": d["Value"]
 })
 
-logging.info('Importing 1000 Questions...')
+logging.info('Importing 1000 Questions. This will take a minute or so...')
 questions = client.collections.get("Question")
 questions.data.insert_many(question_objs)
 logging.info('Finished Importing Questions')
