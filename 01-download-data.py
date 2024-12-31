@@ -12,7 +12,15 @@ import logging
 import requests
 import json
 
-logging.basicConfig(encoding='utf-8', level=logging.INFO)
+def respond(collection, query):
+
+    response = collection.query.near_text(
+        query=query,
+        limit=1
+    )
+    return response.objects[0].properties
+
+logging.basicConfig(encoding='utf-8', level=logging.ERROR)
 logging.info('Weaviate')
 
 huggingface_api_key = os.getenv("HUGGINGFACE_API_KEY")
@@ -34,6 +42,17 @@ client.collections.delete_all()
 dataset = wd.JeopardyQuestions1k()  # Instantiate dataset
 dataset.upload_dataset(client)  # Pass the Weaviate client instance
 
-logging.info(client.collections.get)
+collections = client.collections.list_all()
+print('***************')
+print(collections)
+print('***************')
+
+collection = client.collections.get('JeopardyQuestion')
+print('***************')
+print(respond(collection=collection, query='guitar'))
+print('***************')
+
+# logging.info('*** GET ***')
+# logging.info(client.collections.get)
 
 client.close()
