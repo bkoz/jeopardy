@@ -20,7 +20,8 @@ def respond(collection, query):
     )
     return response.objects[0].properties
 
-logging.basicConfig(encoding='utf-8', level=logging.ERROR)
+logging.basicConfig(encoding='utf-8', level=logging.INFO)
+
 logging.info('Weaviate')
 
 huggingface_api_key = os.getenv("HUGGINGFACE_API_KEY")
@@ -56,3 +57,5 @@ print('***************')
 # logging.info(client.collections.get)
 
 client.close()
+
+logging.info('Finished!')
