@@ -20,9 +20,10 @@ def respond(collection, query):
     )
     return response.objects[0].properties
 
-logging.basicConfig(encoding='utf-8', level=logging.INFO)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-logging.info('Weaviate')
+logging.info('Hello Weaviate')
 
 huggingface_api_key = os.getenv("HUGGINGFACE_API_KEY")
 if huggingface_api_key == None:
@@ -44,14 +45,11 @@ dataset = wd.JeopardyQuestions1k()  # Instantiate dataset
 dataset.upload_dataset(client)  # Pass the Weaviate client instance
 
 collections = client.collections.list_all()
-print('***************')
-print(collections)
-print('***************')
 
 collection = client.collections.get('JeopardyQuestion')
-print('***************')
-print(respond(collection=collection, query='guitar'))
-print('***************')
+logging.info(respond(collection=collection, query='guitar'))
+collection = client.collections.get('JeopardyCategory')
+logging.info(respond(collection=collection, query='guitar'))
 
 # logging.info('*** GET ***')
 # logging.info(client.collections.get)
