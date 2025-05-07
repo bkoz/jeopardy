@@ -1,0 +1,11 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/EliiseS/devcontainer-features/bash-profile:1": {
+      "command": "alias h=history; alias c=clear"
+    },
+    "ghcr.io/prulloac/devcontainer-features/ollama:1": {
+      "pull": "all-minilm, qwen3:4b"
+    }
+  }
+}
