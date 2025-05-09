@@ -88,7 +88,7 @@ def generative_search(query='computers', task=None, limit=1) -> str:
         limit=limit,
         grouped_task=task
     )
-    print(f'Elapsed time = {time.time() - start_time}')
+    print(f'Elapsed time = {time.time() - start_time} seconds')
     return response.generated
 
 with gr.Blocks(title="Search the Jeopardy Vector Database powered by Weaviate") as demo:
