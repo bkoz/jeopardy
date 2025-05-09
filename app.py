@@ -1,25 +1,24 @@
 import gradio as gr
 from huggingface_hub import InferenceClient
-import weaviate.classes as wvc
-import weaviate
-from weaviate.auth import AuthApiKey
 import logging
 import os
 import requests
 import json
+import weaviate
+from weaviate.classes.init import Auth
+from weaviate.classes.config import Configure
+import weaviate.classes as wvc
 
-logging.basicConfig(encoding='utf-8', level=logging.INFO)
-logging.info('Weaviate')
+logging.basicConfig(level=logging.INFO)
 
-huggingface_api_key = os.getenv("HUGGINGFACE_API_KEY")
-if huggingface_api_key == None:
-     logging.error('HUGGINGFACE_API_KEY not set!')
-     exit(1)
+weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
+ollama_api_endpoint = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+ollama_vectorizer_model = model = os.getenv("OLLAMA_VECTORIZER", "all-minilm")
+ollama_generative_model = os.getenv("OLLAMA_LLM","qwen3:4b")
 
-client = weaviate.connect_to_embedded(
-    headers={
-        "X-Huggingface-Api-Key": huggingface_api_key 
-    }
+client = weaviate.connect_to_weaviate_cloud(
+    cluster_url="pa3ddmygtnaokakprvcxyg.c0.us-west3.gcp.weaviate.cloud",
+    auth_credentials=Auth.api_key(weaviate_api_key),
 )
 
 if client.is_ready():
@@ -30,14 +29,18 @@ if client.is_ready():
         logging.info(node)
         logging.info('')
 
-client.collections.delete_all()
+client.collections.delete("Question")
 
 questions = client.collections.create(
     name="Question",
-    vectorizer_config=wvc.config.Configure.Vectorizer.text2vec_huggingface(wait_for_model=True),  
-    generative_config=wvc.config.Configure.Generative.openai()  
+    vectorizer_config=wvc.config.Configure.Vectorizer.text2vec_weaviate(),
+    generative_config=wvc.config.Configure.Generative.ollama(
+        api_endpoint=ollama_api_endpoint,
+        model=ollama_generative_model
+    )
 )
 resp = requests.get('https://raw.githubusercontent.com/databyjp/wv_demo_uploader/main/weaviate_datasets/data/jeopardy_1k.json')
+
 data = json.loads(resp.text)
 
 question_objs = list()
@@ -51,11 +54,10 @@ for i, d in enumerate(data):
         "value": d["Value"]
 })
 
-logging.info('Importing 1000 Questions. This will take a minute or so...')
-questions = client.collections.get("Question")
+logging.info('Importing 1000 Questions...')
 questions.data.insert_many(question_objs)
 logging.info('Finished Importing Questions')
-# print(questions)
+print(questions)
 
 def respond(query):
 
@@ -85,4 +87,5 @@ with gr.Blocks(title="Search the Jeopardy Vector Database powered by Weaviate") 
             
 
 if __name__ == "__main__":
-    demo.launch(share=True, server_name="0.0.0.0")
+    demo.launch()
+

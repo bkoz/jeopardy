@@ -54,14 +54,18 @@ client.collections.delete_all()
 dataset = wd.JeopardyQuestions1k()  # Instantiate dataset
 dataset.upload_dataset(client)  # Pass the Weaviate client instance
 
-collections = client.collections.list_all()
+collections = client.collections.create(
+    name="JeopardyQuestion",
+    vectorizer_config=wd.config.Configure.Vectorizer.text2vec_huggingface(wait_for_model=True),
+    generative_config=wd.config.Configure.Generative.openai()
+)
+
+logger.info(client.collections.list_all())
 
 collection = client.collections.get('JeopardyQuestion')
 logging.info(semantic_search(collection=collection, query='guitar'))
 logging.info(generative_search(collection=collection, query='guitar',
                       task='Summarize', limit=1))
-collection = client.collections.get('JeopardyCategory')
-logging.info(semantic_search(collection=collection, query='guitar'))
 
 # logging.info('*** GET ***')
 # logging.info(client.collections.get)
