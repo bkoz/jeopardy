@@ -2,6 +2,7 @@ import gradio as gr
 from huggingface_hub import InferenceClient
 import logging
 import os
+import time
 import requests
 import json
 import weaviate
@@ -81,11 +82,13 @@ def generative_search(query='computers', task=None, limit=1) -> str:
     print(f'\nPerforming generative search, query = {query}, limit = {limit}.')
     print(f'Prompt: {task}')
     print(f'limit = {limit}')
+    start_time = time.time()
     response = questions.generate.near_text(
         query=query,
         limit=limit,
         grouped_task=task
     )
+    print(f'Elapsed time = {time.time() - start_time}')
     return response.generated
 
 with gr.Blocks(title="Search the Jeopardy Vector Database powered by Weaviate") as demo:
