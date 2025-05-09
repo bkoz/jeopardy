@@ -8,6 +8,8 @@ import weaviate
 from weaviate.classes.init import Auth
 from weaviate.classes.config import Configure
 import weaviate.classes as wvc
+from weaviate.embedded import EmbeddedOptions
+from weaviate.config import AdditionalConfig, Timeout
 
 logging.basicConfig(level=logging.INFO)
 
@@ -16,9 +18,12 @@ ollama_api_endpoint = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 ollama_vectorizer_model = model = os.getenv("OLLAMA_VECTORIZER", "all-minilm")
 ollama_generative_model = os.getenv("OLLAMA_LLM","qwen3:4b")
 
-client = weaviate.connect_to_weaviate_cloud(
-    cluster_url="pa3ddmygtnaokakprvcxyg.c0.us-west3.gcp.weaviate.cloud",
-    auth_credentials=Auth.api_key(weaviate_api_key),
+client = weaviate.connect_to_embedded(
+     environment_variables={
+          "ENABLE_MODULES": "text2vec-ollama,generative-ollama"
+     },
+     additional_config=AdditionalConfig(
+        timeout=Timeout(init=30, query=1000, insert=120))
 )
 
 if client.is_ready():
@@ -28,12 +33,16 @@ if client.is_ready():
     for node in client.cluster.nodes():
         logging.info(node)
         logging.info('')
+    logging.info(client.get_meta())
 
 client.collections.delete("Question")
 
 questions = client.collections.create(
     name="Question",
-    vectorizer_config=wvc.config.Configure.Vectorizer.text2vec_weaviate(),
+    vectorizer_config=wvc.config.Configure.Vectorizer.text2vec_ollama(
+         api_endpoint=ollama_api_endpoint,
+         model=ollama_vectorizer_model
+    ),
     generative_config=wvc.config.Configure.Generative.ollama(
         api_endpoint=ollama_api_endpoint,
         model=ollama_generative_model
@@ -68,6 +77,17 @@ def respond(query):
 
     return response.objects[0].properties 
 
+def generative_search(query='computers', task=None, limit=1) -> str:
+    print(f'\nPerforming generative search, query = {query}, limit = {limit}.')
+    print(f'Prompt: {task}')
+    print(f'limit = {limit}')
+    response = questions.generate.near_text(
+        query=query,
+        limit=limit,
+        grouped_task=task
+    )
+    return response.generated
+
 with gr.Blocks(title="Search the Jeopardy Vector Database powered by Weaviate") as demo:
             gr.Markdown("""# Search the Jeopardy Vector Database powered by Weaviate""")
             semantic_examples = [
@@ -84,6 +104,27 @@ with gr.Blocks(title="Search the Jeopardy Vector Database powered by Weaviate") 
             gr.Examples(semantic_examples, inputs=semantic_input_text, label="Example search concepts:")
             vdb_button = gr.Button(value="Search the Jeopardy Vector Database.")
             vdb_button.click(fn=respond, inputs=[semantic_input_text], outputs=gr.Textbox(label="Search Results"))
+            limit_slider = gr.Slider(label="Adjust the query return limit. (Optional)",value=1, minimum=1, maximum=5, step=1)
+            vdb_button = gr.Button(value="Search the financial vector database.")
+            
+            #
+            # Generative Search 
+            # 
+            prompt_examples = [
+                ["Summarize the information."],
+                ["Summarize the information for a child."]
+            ]
+
+            gr.Markdown("""### Summarize""")
+            generative_search_prompt_text = gr.Textbox(label="Enter a summarization task or choose an example below.", value=prompt_examples[0][0])
+            gr.Examples(prompt_examples,
+                fn=generative_search,
+                inputs=[generative_search_prompt_text]
+            )
+            button = gr.Button(value="Generate the summary.")
+            button.click(fn=generative_search,
+            inputs=[semantic_input_text, generative_search_prompt_text, limit_slider],
+            outputs=gr.Textbox(label="Summary"))
             
 
 if __name__ == "__main__":
