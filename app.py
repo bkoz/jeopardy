@@ -19,6 +19,9 @@ ollama_api_endpoint = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 ollama_vectorizer_model = model = os.getenv("OLLAMA_VECTORIZER", "all-minilm")
 ollama_generative_model = os.getenv("OLLAMA_LLM","qwen3:4b")
 
+# Check if environment variables are set.
+
+
 client = weaviate.connect_to_embedded(
      environment_variables={
           "ENABLE_MODULES": "text2vec-ollama,generative-ollama"
@@ -36,7 +39,9 @@ if client.is_ready():
         logging.info('')
     logging.info(client.get_meta())
 
-client.collections.delete("Question")
+# Delete the Question collection if it exists.
+if client.collections.exists("Question"):
+    client.collections.delete("Question")
 
 questions = client.collections.create(
     name="Question",
@@ -67,7 +72,8 @@ for i, d in enumerate(data):
 logging.info('Importing 1000 Questions...')
 questions.data.insert_many(question_objs)
 logging.info('Finished Importing Questions')
-print(questions)
+
+logging.debug(questions)
 
 def respond(query):
 
