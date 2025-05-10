@@ -108,14 +108,14 @@ with gr.Blocks(title="Search the Jeopardy Vector Database powered by Weaviate") 
             vdb_button = gr.Button(value="Search the Jeopardy Vector Database.")
             vdb_button.click(fn=respond, inputs=[semantic_input_text], outputs=gr.Textbox(label="Search Results"))
             limit_slider = gr.Slider(label="Adjust the query return limit. (Optional)",value=1, minimum=1, maximum=5, step=1)
-            vdb_button = gr.Button(value="Search the financial vector database.")
+            # vdb_button = gr.Button(value="Search the financial vector database.")
             
             #
             # Generative Search 
             # 
             prompt_examples = [
                 ["Summarize the information."],
-                ["Summarize the information for a child."]
+                ["Summarize the information for a child using emojis."]
             ]
 
             gr.Markdown("""### Summarize""")
