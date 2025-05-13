@@ -4,4 +4,4 @@
 - [Runs local ollama](https://github.com/prulloac/devcontainer-features/tree/main/src/ollama) in the codespace devcontainer to serve the embedding model and LLM.
 
 ### Requirements
-- Github codespace with 8 cores and 32GB of memory.
+- Github codespace with 8 cores and 64GB of memory.
