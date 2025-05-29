@@ -1,5 +1,4 @@
 import gradio as gr
-from huggingface_hub import InferenceClient
 import logging
 import os
 import time
@@ -18,9 +17,6 @@ weaviate_api_key = os.getenv("WEAVIATE_API_KEY")
 ollama_api_endpoint = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 ollama_vectorizer_model = model = os.getenv("OLLAMA_VECTORIZER", "all-minilm")
 ollama_generative_model = os.getenv("OLLAMA_LLM","qwen3:4b")
-
-# Check if environment variables are set.
-
 
 client = weaviate.connect_to_embedded(
      environment_variables={
@@ -75,11 +71,11 @@ logging.info('Finished Importing Questions')
 
 logging.debug(questions)
 
-def respond(query):
+def respond(query, limit=1) -> str:
 
     response = questions.query.near_text(
         query=query,
-        limit=1
+        limit=limit,
     )
 
     return response.objects[0].properties 
@@ -112,9 +108,8 @@ with gr.Blocks(title="Search the Jeopardy Vector Database powered by Weaviate") 
             semantic_input_text = gr.Textbox(label="Enter a search concept or choose an example below:", value=semantic_examples[0][0])
             gr.Examples(semantic_examples, inputs=semantic_input_text, label="Example search concepts:")
             vdb_button = gr.Button(value="Search the Jeopardy Vector Database.")
-            vdb_button.click(fn=respond, inputs=[semantic_input_text], outputs=gr.Textbox(label="Search Results"))
             limit_slider = gr.Slider(label="Adjust the query return limit. (Optional)",value=1, minimum=1, maximum=5, step=1)
-            # vdb_button = gr.Button(value="Search the financial vector database.")
+            vdb_button.click(fn=respond, inputs=[semantic_input_text, limit_slider], outputs=gr.Textbox(label="Search Results"))
             
             #
             # Generative Search 
